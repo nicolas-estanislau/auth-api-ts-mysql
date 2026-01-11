@@ -2,18 +2,15 @@ import { Request, Response } from 'express';
 import { db } from '../database/connection';
 import { User } from '../models/user.model';
 import bcrypt from 'bcrypt';
+import { findUserByEmail } from '../repositories/user.repository';
 
 // CREATE
 export const createUser = async (req: Request, res: Response) => {
   const { name, email, password }: User = req.body
 
-  // verificar email duplicado
-  const [rows]: any = await db.execute(
-    'SELECT id FROM users WHERE email = ?',
-    [email]
-  );
+  const existingUser = await findUserByEmail(email);
 
-  if (rows.length > 0) {
+  if (existingUser) {
     return res.status(409).json({ error: 'Email já cadastrado' });
   }
 
@@ -50,15 +47,11 @@ export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, email, password }: User = req.body;
 
-    // verificar email duplicado
-    const [rows]: any = await db.execute(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
-    );
-  
-    if (rows.length > 0) {
-      return res.status(409).json({ error: 'Email já cadastrado' });
-    }
+  const existingUser = await findUserByEmail(email);
+
+  if (existingUser && existingUser.id !== Number(id)) {
+    return res.status(409).json({ error: 'Email já cadastrado' });
+  }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
