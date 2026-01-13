@@ -14,23 +14,18 @@ export const authMiddleware = (
     next: NextFunction
 ) => {
     const authHeader = req.headers.authorization;
-    // console.log("authHeader: ", authHeader)
     if (!authHeader) {
         return res.status(401).json({ error: 'Token não fornecido' });
     }
 
     const [, token] = authHeader.split(' ');
-    // console.log("token: ", token)
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
         // user @types
-        // console.log("user: ", req.user)
         if (req.user) {
             req.user = decoded;
         }
-        // console.log("user 1: ", req.user)
-        // console.log("decoded: ", decoded)
         next();
 
     } catch {
