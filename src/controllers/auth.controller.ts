@@ -8,6 +8,9 @@ import crypto from 'crypto';
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string;
 
+const hashRefreshToken = (token: string) =>
+    crypto.createHash('sha256').update(token).digest('hex');
+
 // LOGIN
 export const login = async (req: Request, res: Response) => {
     try {
@@ -43,8 +46,6 @@ export const login = async (req: Request, res: Response) => {
             { expiresIn: '7d' }
         );
 
-        const hashRefreshToken = (token: string) =>
-            crypto.createHash('sha256').update(token).digest('hex');
 
         const refreshTokenHash = hashRefreshToken(refreshToken);
 
@@ -78,7 +79,9 @@ export const refreshToken = async (req: Request, res: Response) => {
             [payload.id]
         );
 
-        if (rows.length === 0 || rows[0].refresh_token !== refreshToken) {
+        const incomingHash = hashRefreshToken(refreshToken);
+
+        if (rows[0].refresh_token !== incomingHash) {
             return res.status(403).json({ error: 'Refresh token inválido' });
         }
 
@@ -97,12 +100,22 @@ export const refreshToken = async (req: Request, res: Response) => {
 
 // LOGOUT
 export const logout = async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
+    try {
+        const { refreshToken } = req.body;
+        const incomingHash = hashRefreshToken(refreshToken);
 
-    await db.execute(
-        'UPDATE users SET refresh_token = NULL WHERE refresh_token = ?',
-        [refreshToken]
-    );
+        if (refreshToken) {
+            await db.execute(
+                'UPDATE users SET refresh_token = NULL WHERE refresh_token = ?',
+                [incomingHash]
+            );
+        }
 
-    return res.json({ message: 'Logout realizado com sucesso' });
+        return res.json({ message: 'Logout realizado com sucesso' });
+
+    } catch {
+
+        return res.json({ message: 'Logout realizado com sucesso' });
+    }
+
 };
