@@ -56,6 +56,7 @@ export const login = async (req: Request, res: Response) => {
         return res.json({ token, refreshToken });
 
     } catch (error: any) {
+
         return res.status(400).json({ error: error.errors ?? 'Erro ao logar' });
     }
 };
@@ -71,8 +72,9 @@ export const refreshToken = async (req: Request, res: Response) => {
     try {
         const payload = jwt.verify(
             refreshToken,
-            REFRESH_TOKEN_SECRET!
+            REFRESH_TOKEN_SECRET
         ) as { id: number };
+        console.log("payload: ", payload)
 
         const [rows]: any = await db.execute(
             'SELECT refresh_token FROM users WHERE id = ?',
@@ -80,14 +82,14 @@ export const refreshToken = async (req: Request, res: Response) => {
         );
 
         const incomingHash = hashRefreshToken(refreshToken);
-
+        console.log("rows[0].refresh_token: ", rows[0].refresh_token)
         if (rows[0].refresh_token !== incomingHash) {
             return res.status(403).json({ error: 'Refresh token inválido' });
         }
 
         const newAccessToken = jwt.sign(
             { id: payload.id },
-            process.env.JWT_SECRET!,
+            JWT_SECRET,
             { expiresIn: '15m' }
         );
 
@@ -110,7 +112,6 @@ export const logout = async (req: Request, res: Response) => {
                 [incomingHash]
             );
         }
-
         return res.json({ message: 'Logout realizado com sucesso' });
 
     } catch {
