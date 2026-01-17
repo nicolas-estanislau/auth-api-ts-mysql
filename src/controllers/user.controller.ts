@@ -66,13 +66,56 @@ export const updateUser = async (req: Request, res: Response) => {
 // PATCH
 export const updatePatchUser = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, email }: User = req.body;
-  await db.execute(
-    'UPDATE users SET name = ?, email = ? WHERE id = ?',
-    [name, email, id]
+  const { name, email, password }: User = req.body;
+
+  const [rows]: any = await db.execute(
+    "SELECT id FROM users WHERE id = ?",
+    [id]
   );
 
-  res.json({ message: 'Usuário atualizado com sucesso' });
+  if (rows.length === 0) {
+    return res.status(404).json({ message: "Usuário não encontrado" });
+  }
+
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (name) {
+    fields.push("name = ?");
+    values.push(name);
+  }
+
+  if (email) {
+    fields.push("email = ?");
+    values.push(email);
+  }
+
+  if (password) {
+    const hashed = await bcrypt.hash(password, 10);
+    fields.push("password = ?");
+    values.push(hashed);
+  }
+
+  if (fields.length === 0) {
+    return res.status(400).json({
+      message: "Nenhum campo enviado para atualização",
+    });
+  }
+
+  const query = `
+    UPDATE users
+    SET ${fields.join(", ")}
+    WHERE id = ?
+  `;
+  console.log("fields: ", fields)
+  console.log("values: ", values)
+  console.log("query: ", query)
+
+  await db.execute(query, [...values, id]);
+
+  return res.status(200).json({
+    message: "Usuário atualizado com sucesso",
+  });
 };
 
 // DELETE

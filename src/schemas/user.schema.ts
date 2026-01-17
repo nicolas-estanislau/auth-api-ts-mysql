@@ -26,3 +26,20 @@ export const updateUserSchema = z.object({
     .string()
     .min(6, 'Senha mínima de 6 caracteres')
 })
+
+export const updatePatchUserSchema = z.object({
+  name: z
+    .string()
+    .min(3, 'O nome deve ter pelo menos 3 caracteres')
+    .optional(),
+
+  email: z
+    .email('Email inválido')
+    .optional(),
+
+
+  password: z
+    .string()
+    .min(6, 'Senha mínima de 6 caracteres')
+    .optional()
+})

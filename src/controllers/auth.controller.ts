@@ -74,7 +74,6 @@ export const refreshToken = async (req: Request, res: Response) => {
             refreshToken,
             REFRESH_TOKEN_SECRET
         ) as { id: number };
-        console.log("payload: ", payload)
 
         const [rows]: any = await db.execute(
             'SELECT refresh_token FROM users WHERE id = ?',
