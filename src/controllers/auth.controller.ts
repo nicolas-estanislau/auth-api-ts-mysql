@@ -81,7 +81,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         );
 
         const incomingHash = hashRefreshToken(refreshToken);
-        console.log("rows[0].refresh_token: ", rows[0].refresh_token)
+       
         if (rows[0].refresh_token !== incomingHash) {
             return res.status(403).json({ error: 'Refresh token inválido' });
         }

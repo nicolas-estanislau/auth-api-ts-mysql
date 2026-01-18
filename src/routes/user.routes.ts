@@ -5,6 +5,7 @@ import {
   getUserById,
   updateUser,
   updatePatchUser,
+  softDeleteUser,
   deleteUser
 } from '../controllers/user.controller';
 import { validate } from "../middlewares/user.validate";
@@ -17,8 +18,8 @@ router.post('/users', validate(createUserSchema), authMiddleware, createUser);
 router.get('/users', authMiddleware, getUsers);
 router.get('/users/:id', authMiddleware, getUserById);
 router.put('/users/:id', validate(updateUserSchema), authMiddleware, updateUser);
-// in progress
-router.patch('/users/:id', validate(updatePatchUserSchema), updatePatchUser);
+router.patch('/users/:id', validate(updatePatchUserSchema), authMiddleware, updatePatchUser);
+router.patch('/users/:id/soft-delete', authMiddleware, softDeleteUser);
 
 router.delete('/users/:id', authMiddleware, deleteUser);
 

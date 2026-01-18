@@ -43,3 +43,6 @@ export const updatePatchUserSchema = z.object({
     .min(6, 'Senha mínima de 6 caracteres')
     .optional()
 })
+export const softDeleteUserSchema = z.object({
+  delete_at: z.boolean()
+})

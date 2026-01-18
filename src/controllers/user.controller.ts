@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../database/connection';
 import { User } from '../models/user.model';
 import bcrypt from 'bcrypt';
-import { findUserByEmail } from '../repositories/user.repository';
+import { findUserByEmail, findUserById } from '../repositories/user.repository';
 
 // CREATE
 export const createUser = async (req: Request, res: Response) => {
@@ -26,7 +26,8 @@ export const createUser = async (req: Request, res: Response) => {
 
 // READ ALL
 export const getUsers = async (_: Request, res: Response) => {
-  const [rows] = await db.execute('SELECT * FROM users');
+  const [rows] = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL');
+
   res.json(rows);
 };
 
@@ -35,9 +36,13 @@ export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const [rows]: any = await db.execute(
-    'SELECT * FROM users WHERE id = ?',
+    'SELECT * FROM users WHERE id = ? AND deleted_at IS NULL',
     [id]
   );
+
+  if (rows.length === 0) {
+    return res.status(401).json({ error: 'Usuário não encontrado' });
+  }
 
   res.json(rows[0]);
 };
@@ -107,14 +112,37 @@ export const updatePatchUser = async (req: Request, res: Response) => {
     SET ${fields.join(", ")}
     WHERE id = ?
   `;
-  console.log("fields: ", fields)
-  console.log("values: ", values)
-  console.log("query: ", query)
 
   await db.execute(query, [...values, id]);
 
   return res.status(200).json({
     message: "Usuário atualizado com sucesso",
+  });
+};
+
+// SOFT DELETE
+export const softDeleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await findUserById(id)
+
+  if (!result) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+
+  if (result.deleted_at) {
+    return res.status(400).json({
+      message: "Usuário já está deletado",
+    });
+  }
+
+  await db.execute(
+    "UPDATE users SET deleted_at = NOW() WHERE id = ?",
+    [id]
+  );
+
+  return res.status(200).json({
+    message: "Usuário deletado com sucesso (soft delete)",
   });
 };
 

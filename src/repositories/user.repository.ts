@@ -8,3 +8,12 @@ export const findUserByEmail = async (email: string) => {
 
     return rows[0] || null;
 };
+
+export const findUserById = async (id: string) => {
+    const [rows]: any = await db.execute(
+        'SELECT id, deleted_at FROM users WHERE id = ?',
+        [id]
+    )
+
+    return rows[0] || null;
+}
