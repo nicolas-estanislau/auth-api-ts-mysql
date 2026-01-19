@@ -35,16 +35,13 @@ export const getUsers = async (_: Request, res: Response) => {
 export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const [rows]: any = await db.execute(
-    'SELECT * FROM users WHERE id = ? AND deleted_at IS NULL',
-    [id]
-  );
+  const result = await findUserById(id)
 
-  if (rows.length === 0) {
-    return res.status(401).json({ error: 'Usuário não encontrado' });
+  if (!result || result.deleted_at) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
   }
 
-  res.json(rows[0]);
+  res.json(result);
 };
 
 // UPDATE
@@ -144,6 +141,22 @@ export const softDeleteUser = async (req: Request, res: Response) => {
   return res.status(200).json({
     message: "Usuário deletado com sucesso (soft delete)",
   });
+};
+
+// RESTORE USER
+export const restoreUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const [result]: any = await db.execute(
+    "UPDATE users SET deleted_at = NULL WHERE id = ?",
+    [id]
+  );
+
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+
+  return res.json({ message: "Usuário restaurado com sucesso" });
 };
 
 // DELETE

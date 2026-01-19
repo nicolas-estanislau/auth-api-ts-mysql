@@ -11,7 +11,7 @@ export const findUserByEmail = async (email: string) => {
 
 export const findUserById = async (id: string) => {
     const [rows]: any = await db.execute(
-        'SELECT id, deleted_at FROM users WHERE id = ?',
+        'SELECT * FROM users WHERE id = ?',
         [id]
     )
 

@@ -6,6 +6,7 @@ import {
   updateUser,
   updatePatchUser,
   softDeleteUser,
+  restoreUser,
   deleteUser
 } from '../controllers/user.controller';
 import { validate } from "../middlewares/user.validate";
@@ -20,6 +21,7 @@ router.get('/users/:id', authMiddleware, getUserById);
 router.put('/users/:id', validate(updateUserSchema), authMiddleware, updateUser);
 router.patch('/users/:id', validate(updatePatchUserSchema), authMiddleware, updatePatchUser);
 router.patch('/users/:id/soft-delete', authMiddleware, softDeleteUser);
+router.patch('/users/:id/restore', authMiddleware, restoreUser);
 
 router.delete('/users/:id', authMiddleware, deleteUser);
 
