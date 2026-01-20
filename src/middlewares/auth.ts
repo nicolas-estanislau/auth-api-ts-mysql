@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { db } from '../database/connection';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -8,7 +9,7 @@ interface TokenPayload {
     email: string;
 }
 
-export const authMiddleware = (
+export const authMiddleware = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -22,10 +23,26 @@ export const authMiddleware = (
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
-        // user @types
-        if (req.user) {
-            req.user = decoded;
+
+        const [rows]: any = await db.execute(
+            "SELECT id, deleted_at FROM users WHERE id = ?",
+            [decoded.id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "Usuário não existe" });
         }
+
+        if (rows[0].deleted_at) {
+            return res.status(401).json({
+                message: "Sessão inválida. Usuário desativado.",
+            });
+        }
+        // manter esse user @types para implementar regras no role admin
+        // user @types
+        req.user = decoded;
+        req.userId = decoded.id;
+
         next();
 
     } catch {

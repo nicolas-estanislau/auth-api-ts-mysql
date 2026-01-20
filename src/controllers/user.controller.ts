@@ -34,6 +34,7 @@ export const getUsers = async (_: Request, res: Response) => {
 // READ BY ID
 export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.userId;
 
   const result = await findUserById(id)
 
@@ -41,7 +42,7 @@ export const getUserById = async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
 
-  res.json(result);
+  res.status(200).json(result);
 };
 
 // UPDATE
@@ -134,12 +135,12 @@ export const softDeleteUser = async (req: Request, res: Response) => {
   }
 
   await db.execute(
-    "UPDATE users SET deleted_at = NOW() WHERE id = ?",
+    "UPDATE users SET deleted_at = NOW(), refresh_token = NULL WHERE id = ?",
     [id]
   );
 
   return res.status(200).json({
-    message: "Usuário deletado com sucesso (soft delete)",
+    message: "Usuário desativado e sessão encerrada",
   });
 };
 

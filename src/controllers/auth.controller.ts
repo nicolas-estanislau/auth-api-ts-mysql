@@ -20,7 +20,7 @@ export const login = async (req: Request, res: Response) => {
             'SELECT * FROM users WHERE email = ?',
             [data.email]
         );
-        if (rows.length === 0) {
+        if (rows.length === 0 || rows[0].deleted_at) {
             return res.status(401).json({ error: 'Usuário não existe' });
         }
 
@@ -81,7 +81,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         );
 
         const incomingHash = hashRefreshToken(refreshToken);
-       
+
         if (rows[0].refresh_token !== incomingHash) {
             return res.status(403).json({ error: 'Refresh token inválido' });
         }
