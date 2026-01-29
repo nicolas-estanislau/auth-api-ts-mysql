@@ -26,15 +26,16 @@ export const createUser = async (req: Request, res: Response) => {
 
 // READ ALL
 export const getUsers = async (_: Request, res: Response) => {
-  const [rows] = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL');
+  const [userRows] = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL');
 
-  res.json(rows);
+  res.json(userRows);
 };
 
 // READ BY ID
 export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.userId;
+  // usar esse userId para saber quem esta fazendo a requisição
+  //const userId = req.userId;
 
   const result = await findUserById(id)
 
@@ -71,12 +72,12 @@ export const updatePatchUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, email, password }: User = req.body;
 
-  const [rows]: any = await db.execute(
+  const [userRow]: any = await db.execute(
     "SELECT id FROM users WHERE id = ?",
     [id]
   );
 
-  if (rows.length === 0) {
+  if (userRow.length === 0) {
     return res.status(404).json({ message: "Usuário não encontrado" });
   }
 
@@ -135,7 +136,7 @@ export const softDeleteUser = async (req: Request, res: Response) => {
   }
 
   await db.execute(
-    "UPDATE users SET deleted_at = NOW(), refresh_token = NULL WHERE id = ?",
+    "UPDATE users SET deleted_at = NOW(), status='inactive', refresh_token = NULL WHERE id = ?",
     [id]
   );
 
@@ -149,7 +150,7 @@ export const restoreUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const [result]: any = await db.execute(
-    "UPDATE users SET deleted_at = NULL WHERE id = ?",
+    "UPDATE users SET deleted_at = NULL, status='active' WHERE id = ?",
     [id]
   );
 
@@ -171,4 +172,50 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 
   return res.json({ message: 'Usuário removido com sucesso' });
+};
+
+// UPDATE STATUS
+export const updateUserStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const [userRow]: any = await db.execute(
+    `
+    SELECT id, status
+    FROM users
+    WHERE id = ? AND deleted_at IS NULL
+    `,
+    [id]
+  );
+
+  if (userRow.length === 0) {
+    return res.status(404).json({
+      message: "Usuário não encontrado",
+    });
+  }
+
+  if (userRow[0].status === status) {
+    return res.status(400).json({
+      message: "Usuário já está com esse status",
+    });
+  }
+
+  await db.execute(
+    "UPDATE users SET status = ? WHERE id = ?",
+    [status, id]
+  );
+
+  if (status === "inactive") {
+    await db.execute(
+      "UPDATE users SET refresh_token = NULL WHERE id = ?",
+      [id]
+    );
+  }
+
+  return res.json({
+    message: `Usuário ${status === "active" ? "ativado" : "inativado"} com sucesso`,
+  });
 };

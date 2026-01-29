@@ -16,15 +16,22 @@ export const login = async (req: Request, res: Response) => {
     try {
         const data = loginSchema.parse(req.body);
 
-        const [rows]: any = await db.execute(
+        const [userRow]: any = await db.execute(
             'SELECT * FROM users WHERE email = ?',
             [data.email]
         );
-        if (rows.length === 0 || rows[0].deleted_at) {
+
+        if (userRow.length === 0 || userRow[0].deleted_at) {
             return res.status(401).json({ error: 'Usuário não existe' });
         }
 
-        const user = rows[0];
+        const user = userRow[0];
+
+        if (user.status !== "active") {
+            return res.status(403).json({
+                message: "Usuário inativo",
+            });
+        }
 
         const passwordMatch = await bcrypt.compare(
             data.password,
@@ -75,14 +82,14 @@ export const refreshToken = async (req: Request, res: Response) => {
             REFRESH_TOKEN_SECRET
         ) as { id: number };
 
-        const [rows]: any = await db.execute(
+        const [userRow]: any = await db.execute(
             'SELECT refresh_token FROM users WHERE id = ?',
             [payload.id]
         );
 
         const incomingHash = hashRefreshToken(refreshToken);
 
-        if (rows[0].refresh_token !== incomingHash) {
+        if (userRow[0].refresh_token !== incomingHash) {
             return res.status(403).json({ error: 'Refresh token inválido' });
         }
 

@@ -46,3 +46,7 @@ export const updatePatchUserSchema = z.object({
 export const softDeleteUserSchema = z.object({
   delete_at: z.boolean()
 })
+
+export const updateStatusUserSchema = z.object({
+  status: z.enum(["active", "inactive"])
+})

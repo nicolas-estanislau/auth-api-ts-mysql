@@ -24,20 +24,27 @@ export const authMiddleware = async (
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
 
-        const [rows]: any = await db.execute(
-            "SELECT id, deleted_at FROM users WHERE id = ?",
+        const [userRow]: any = await db.execute(
+            "SELECT id, deleted_at, status FROM users WHERE id = ?",
             [decoded.id]
         );
 
-        if (rows.length === 0) {
+        if (userRow.length === 0) {
             return res.status(401).json({ message: "Usuário não existe" });
         }
 
-        if (rows[0].deleted_at) {
+        if (userRow[0].status !== "active") {
+            return res.status(401).json({
+                message: "Usuário inativo",
+            });
+        }
+
+        if (userRow[0].deleted_at) {
             return res.status(401).json({
                 message: "Sessão inválida. Usuário desativado.",
             });
         }
+
         // manter esse user @types para implementar regras no role admin
         // user @types
         req.user = decoded;
