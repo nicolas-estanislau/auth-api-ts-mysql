@@ -56,3 +56,35 @@ export const authMiddleware = async (
         return res.status(401).json({ error: 'Token inválido ou expirado' });
     }
 };
+
+export const adminMiddleware = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const userId = req.userId;
+
+    const [rows]: any = await db.execute(
+        `
+      SELECT role
+      FROM users
+      WHERE id = ?
+        AND deleted_at IS NULL
+        AND status = 'active'
+      `,
+        [userId]
+    );
+
+    if (rows.length === 0) {
+        return res.status(401).json({ message: "Usuário inválido" });
+    }
+
+    if (rows[0].role !== "admin") {
+        return res.status(403).json({
+            message: "Acesso permitido apenas para administradores",
+        });
+    }
+
+    next();
+}
+
