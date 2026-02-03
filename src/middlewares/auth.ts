@@ -7,6 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 interface TokenPayload {
     id: number;
     email: string;
+    role: 'admin' | 'user' | 'moderator';
 }
 
 export const authMiddleware = async (
@@ -49,7 +50,6 @@ export const authMiddleware = async (
         // user @types
         req.user = decoded;
         req.userId = decoded.id;
-
         next();
 
     } catch {
@@ -62,8 +62,8 @@ export const adminMiddleware = async (
     res: Response,
     next: NextFunction
 ) => {
+    // quem fez a requisição
     const userId = req.userId;
-
     const [rows]: any = await db.execute(
         `
       SELECT role
@@ -87,4 +87,22 @@ export const adminMiddleware = async (
 
     next();
 }
+
+export const canAccessUser = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const loggedUser = req.user!;
+    const requestedUserId = Number(req.params.id);
+
+    const isAdmin = loggedUser.role === 'admin';
+    const isOwner = loggedUser.id === requestedUserId;
+
+    if (!isAdmin && !isOwner) {
+        return res.status(403).json({ error: 'Acesso negado' });
+    }
+
+    next();
+};
 

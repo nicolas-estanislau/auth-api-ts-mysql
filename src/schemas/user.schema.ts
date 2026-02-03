@@ -50,3 +50,7 @@ export const softDeleteUserSchema = z.object({
 export const updateStatusUserSchema = z.object({
   status: z.enum(["active", "inactive"])
 })
+
+export const updateRoleUserSchema = z.object({
+  role: z.enum(["admin", "user", "moderator"])
+})

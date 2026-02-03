@@ -34,8 +34,6 @@ export const getUsers = async (_: Request, res: Response) => {
 // READ BY ID
 export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  // usar esse userId para saber quem esta fazendo a requisição
-  //const userId = req.userId;
 
   const result = await findUserById(id)
 
