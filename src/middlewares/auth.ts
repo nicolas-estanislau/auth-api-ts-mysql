@@ -88,6 +88,14 @@ export const adminMiddleware = async (
     next();
 }
 
+// O canAccessUser é para  Admin acessa qualquer usuário
+// Usuário comum acessa apenas o próprio id
+// Qualquer outra tentativa é bloqueada
+// Por que isso é a melhor abordagem?
+// Para segurança forte (auth + authorization)
+// Controller sem regra de permissão (user.controller)
+// Reutilizável em outras rotas ()
+// Escala fácil (ex: admin, manager, support…)
 export const canAccessUser = (
     req: Request,
     res: Response,

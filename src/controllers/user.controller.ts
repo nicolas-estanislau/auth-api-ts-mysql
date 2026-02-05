@@ -217,3 +217,54 @@ export const updateUserStatus = async (
     message: `Usuário ${status === "active" ? "ativado" : "inativado"} com sucesso`,
   });
 };
+
+export const updateUserRole = async (
+  req: Request,
+  res: Response
+) => {
+  const { role } = req.body;
+  const targetUserId = Number(req.params.id);
+  const loggedUserId = req.userId!;
+
+  // Evita auto-alteração
+  if (targetUserId === loggedUserId) {
+    return res.status(403).json({
+      message: "Você não pode alterar sua própria role",
+    });
+  }
+  // Verifica se usuário existe
+  const [userRow]: any = await db.execute(
+    `
+    SELECT id, role
+    FROM users
+    WHERE id = ? AND deleted_at IS NULL
+    `,
+    [targetUserId]
+  );
+
+  if (userRow.length === 0) {
+    return res.status(404).json({
+      message: "Usuário não encontrado",
+    });
+  }
+  // Evita update desnecessário
+  if (userRow[0].role === role) {
+    return res.status(400).json({
+      message: "Usuário já está com esse papel",
+    });
+  }
+  // Atualiza role
+  await db.execute(
+    "UPDATE users SET role = ? WHERE id = ?",
+    [role, targetUserId]
+  );
+
+  return res.json({
+    message: `Papel do usuário atualizado para ${role} com sucesso`,
+    "user": {
+      "id": targetUserId,
+      "role": role
+    }
+  });
+
+}
