@@ -21,7 +21,13 @@ export const createUser = async (req: Request, res: Response) => {
     [name, email, hashedPassword]
   );
 
-  res.status(201).json({ message: 'Usuário criado com sucesso' });
+  res.status(201).json({
+    message: 'Usuário criado com sucesso',
+    "user": {
+      "name": name,
+      "email": email
+    }
+  });
 };
 
 // READ ALL
@@ -62,7 +68,14 @@ export const updateUser = async (req: Request, res: Response) => {
     [name, email, hashedPassword, id]
   );
 
-  res.json({ message: 'Usuário atualizado com sucesso' });
+  res.json({
+    message: 'Usuário atualizado com sucesso',
+    "user": {
+      "id": id,
+      "name": name,
+      "email": email
+    }
+  });
 };
 
 // PATCH
@@ -114,6 +127,10 @@ export const updatePatchUser = async (req: Request, res: Response) => {
 
   return res.status(200).json({
     message: "Usuário atualizado com sucesso",
+    "user": {
+      "fields": fields,
+      "values": values
+    }
   });
 };
 
@@ -140,6 +157,9 @@ export const softDeleteUser = async (req: Request, res: Response) => {
 
   return res.status(200).json({
     message: "Usuário desativado e sessão encerrada",
+    "user": {
+      "id": id
+    }
   });
 };
 
@@ -156,7 +176,12 @@ export const restoreUser = async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
 
-  return res.json({ message: "Usuário restaurado com sucesso" });
+  return res.json({
+    message: "Usuário restaurado com sucesso",
+    "user": {
+      "id": id
+    }
+  });
 };
 
 // DELETE
@@ -169,7 +194,12 @@ export const deleteUser = async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
 
-  return res.json({ message: 'Usuário removido com sucesso' });
+  return res.json({
+    message: 'Usuário removido com sucesso',
+    "user": {
+      "id": id
+    }
+  });
 };
 
 // UPDATE STATUS
@@ -215,6 +245,10 @@ export const updateUserStatus = async (
 
   return res.json({
     message: `Usuário ${status === "active" ? "ativado" : "inativado"} com sucesso`,
+    "user": {
+      "id": id,
+      "status": status
+    }
   });
 };
 

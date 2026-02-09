@@ -17,10 +17,10 @@ import { authMiddleware, adminMiddleware, canAccessUser } from '../middlewares/a
 
 const router = Router();
 
-router.post('/users', validate(createUserSchema), createUser);
+router.post('/users', validate(createUserSchema), authMiddleware, adminMiddleware, createUser);
 router.get('/users/:id', authMiddleware, canAccessUser, getUserById);
-router.put('/users/:id', validate(updateUserSchema), authMiddleware, updateUser);
-router.patch('/users/:id', validate(updatePatchUserSchema), authMiddleware, updatePatchUser);
+router.put('/users/:id', validate(updateUserSchema), authMiddleware, canAccessUser, updateUser);
+router.patch('/users/:id', validate(updatePatchUserSchema), authMiddleware, canAccessUser, updatePatchUser);
 
 // ROTAS ADMIN
 router.get('/users', authMiddleware, adminMiddleware, getUsers);
