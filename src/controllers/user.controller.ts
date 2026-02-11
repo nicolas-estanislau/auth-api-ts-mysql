@@ -125,11 +125,18 @@ export const updatePatchUser = async (req: Request, res: Response) => {
 
   await db.execute(query, [...values, id]);
 
+  const fieldFilter = fields.map((field, index) => ({
+    field: field.replace(" = ?", ""),
+    value: values[index],
+
+  }))
+  console.log("fieldFilter: ", fieldFilter)
+
   return res.status(200).json({
     message: "Usuário atualizado com sucesso",
     "user": {
-      "fields": fields,
-      "values": values
+      "id": id,
+      "fields": fieldFilter
     }
   });
 };
