@@ -101,13 +101,19 @@ export const canAccessUser = (
     res: Response,
     next: NextFunction
 ) => {
-    const loggedUser = req.user!;
+
+    if (!req.user) {
+        return res.status(401).json({ error: 'Não autenticado' });
+    }
+
+    const loggedUser = req.user;
     const requestedUserId = Number(req.params.id);
 
     const isAdmin = loggedUser.role === 'admin';
+    const isModerator = loggedUser.role === "moderator";
     const isOwner = loggedUser.id === requestedUserId;
 
-    if (!isAdmin && !isOwner) {
+    if (!isAdmin && !isOwner && !isModerator) {
         return res.status(403).json({ error: 'Acesso negado' });
     }
 
