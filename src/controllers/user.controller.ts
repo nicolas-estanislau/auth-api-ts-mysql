@@ -82,7 +82,6 @@ export const updateUser = async (req: Request, res: Response) => {
 export const updatePatchUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, email, password }: User = req.body;
-
   const [userRow]: any = await db.execute(
     "SELECT id FROM users WHERE id = ?",
     [id]
@@ -125,18 +124,16 @@ export const updatePatchUser = async (req: Request, res: Response) => {
 
   await db.execute(query, [...values, id]);
 
-  const fieldFilter = fields.map((field, index) => ({
-    field: field.replace(" = ?", ""),
-    value: values[index],
-
-  }))
-  console.log("fieldFilter: ", fieldFilter)
+  // cria um objeto com os campos atualizados 
+  const updatedFields = fields.map((field) => {
+    return field.replace(" = ?", "")
+  })
 
   return res.status(200).json({
     message: "Usuário atualizado com sucesso",
     "user": {
       "id": id,
-      "fields": fieldFilter
+      "updatedFields": updatedFields
     }
   });
 };
