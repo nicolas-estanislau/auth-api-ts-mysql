@@ -262,10 +262,10 @@ export const updateUserRole = async (
 ) => {
   const { role } = req.body;
   const targetUserId = Number(req.params.id);
-  const loggedUserId = req.userId!;
+  const loggedUserId = req.user!;
 
   // Evita auto-alteração
-  if (targetUserId === loggedUserId) {
+  if (targetUserId === loggedUserId.id) {
     return res.status(403).json({
       message: "Você não pode alterar sua própria role",
     });

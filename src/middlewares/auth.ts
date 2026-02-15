@@ -103,17 +103,17 @@ export const canAccessUser = (
     const isOwner = loggedUser.id === requestedUserId;
 
     // se não for admin e não for owner e não for moderador
-    // true
+    // true ✅
     // se for admin e for owner e não for moderador
-    // false
+    // false ❌
     // se for admin e não for owner e não for moderador
-    // false
+    // false ❌
     // se não for admin e for onwer e não for moderador
-    // false
+    // false ❌
     // se não for admin e não for onwer e for moderador
-    // false
+    // false ❌
     // se não for admin for onwer e for moderador 
-    // false
+    // false ❌
     if (!isAdmin && !isOwner && !isModerator) {
         return res.status(403).json({ error: 'Acesso negado' });
     }
