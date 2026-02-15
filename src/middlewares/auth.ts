@@ -26,7 +26,7 @@ export const authMiddleware = async (
         const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
 
         const [userRow]: any = await db.execute(
-            "SELECT id, deleted_at, status FROM users WHERE id = ?",
+            "SELECT id, deleted_at, status, role FROM users WHERE id = ?",
             [decoded.id]
         );
 
@@ -49,7 +49,6 @@ export const authMiddleware = async (
         // manter esse user @types para implementar regras no role admin
         // user @types
         req.user = decoded;
-        req.userId = decoded.id;
         next();
 
     } catch {
@@ -63,23 +62,13 @@ export const adminMiddleware = async (
     next: NextFunction
 ) => {
     // quem fez a requisição
-    const userId = req.userId;
-    const [rows]: any = await db.execute(
-        `
-      SELECT role
-      FROM users
-      WHERE id = ?
-        AND deleted_at IS NULL
-        AND status = 'active'
-      `,
-        [userId]
-    );
-
-    if (rows.length === 0) {
+    const user = req.user;
+    
+    if (!user) {
         return res.status(401).json({ message: "Usuário inválido" });
     }
 
-    if (rows[0].role !== "admin") {
+    if (user.role !== "admin") {
         return res.status(403).json({
             message: "Acesso permitido apenas para administradores",
         });
@@ -113,6 +102,18 @@ export const canAccessUser = (
     const isModerator = loggedUser.role === "moderator";
     const isOwner = loggedUser.id === requestedUserId;
 
+    // se não for admin e não for owner e não for moderador
+    // true
+    // se for admin e for owner e não for moderador
+    // false
+    // se for admin e não for owner e não for moderador
+    // false
+    // se não for admin e for onwer e não for moderador
+    // false
+    // se não for admin e não for onwer e for moderador
+    // false
+    // se não for admin for onwer e for moderador 
+    // false
     if (!isAdmin && !isOwner && !isModerator) {
         return res.status(403).json({ error: 'Acesso negado' });
     }
