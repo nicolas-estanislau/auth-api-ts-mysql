@@ -11,7 +11,7 @@ import {
   updateUserRole,
   deleteUser
 } from '../controllers/user.controller';
-import { validate } from "../middlewares/user.validate";
+import { validate } from "../validators/user.validate";
 import { createUserSchema, updateUserSchema, updatePatchUserSchema, updateStatusUserSchema, updateRoleUserSchema } from "../schemas/user.schema";
 import { authMiddleware, adminMiddleware, canAccessUser } from '../middlewares/auth';
 

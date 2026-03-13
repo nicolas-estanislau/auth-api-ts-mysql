@@ -2,7 +2,13 @@ import { Request, Response } from 'express';
 import { db } from '../database/connection';
 import { User } from '../models/user.model';
 import bcrypt from 'bcrypt';
-import { findUserByEmail, findUserById } from '../repositories/user.repository';
+import { 
+  findUserByEmail, 
+  findUserById, 
+  getAllUsersRepository, 
+  createUserRepository, 
+  updateUserRepository
+ } from '../repositories/user.repository';
 
 // CREATE
 export const createUser = async (req: Request, res: Response) => {
@@ -16,10 +22,7 @@ export const createUser = async (req: Request, res: Response) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await db.execute(
-    'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-    [name, email, hashedPassword]
-  );
+  createUserRepository(name, email, hashedPassword)
 
   res.status(201).json({
     message: 'Usuário criado com sucesso',
@@ -32,7 +35,7 @@ export const createUser = async (req: Request, res: Response) => {
 
 // READ ALL
 export const getUsers = async (_: Request, res: Response) => {
-  const [userRows] = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL');
+ const userRows = await getAllUsersRepository()
 
   res.json(userRows);
 };
@@ -43,6 +46,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
   const result = await findUserById(id)
 
+  // regra de negócio
   if (!result || result.deleted_at) {
     return res.status(404).json({ error: 'Usuário não encontrado' });
   }
@@ -57,16 +61,15 @@ export const updateUser = async (req: Request, res: Response) => {
 
   const existingUser = await findUserByEmail(email);
 
+  // regra de negócio 
+  // mudar esse codigo para service
   if (existingUser && existingUser.id !== Number(id)) {
     return res.status(409).json({ error: 'Email já cadastrado' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await db.execute(
-    'UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?',
-    [name, email, hashedPassword, id]
-  );
+ updateUserRepository(name, email, hashedPassword, id)
 
   res.json({
     message: 'Usuário atualizado com sucesso',

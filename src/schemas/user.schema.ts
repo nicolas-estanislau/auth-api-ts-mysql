@@ -11,6 +11,9 @@ export const createUserSchema = z.object({
   password: z
     .string()
     .min(6, 'Senha mínima de 6 caracteres')
+    .regex(/[A-Z]/, "Deve conter letra maiúscula")
+    .regex(/[0-9]/, "Deve conter número")
+    .regex(/[^A-Za-z0-9]/, "Deve conter caractere especial")
 });
 
 export const updateUserSchema = z.object({
@@ -25,6 +28,9 @@ export const updateUserSchema = z.object({
   password: z
     .string()
     .min(6, 'Senha mínima de 6 caracteres')
+    .regex(/[A-Z]/, "Deve conter letra maiúscula")
+    .regex(/[0-9]/, "Deve conter número")
+    .regex(/[^A-Za-z0-9]/, "Deve conter caractere especial")
 })
 
 export const updatePatchUserSchema = z.object({
@@ -41,6 +47,9 @@ export const updatePatchUserSchema = z.object({
   password: z
     .string()
     .min(6, 'Senha mínima de 6 caracteres')
+    .regex(/[A-Z]/, "Deve conter letra maiúscula")
+    .regex(/[0-9]/, "Deve conter número")
+    .regex(/[^A-Za-z0-9]/, "Deve conter caractere especial")
     .optional()
 })
 export const softDeleteUserSchema = z.object({
