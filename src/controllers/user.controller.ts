@@ -45,6 +45,7 @@ export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const result = await findUserById(id)
+  console.log("result: ", result)
 
   // regra de negócio
   if (!result || result.deleted_at) {
@@ -89,6 +90,7 @@ export const updatePatchUser = async (req: Request, res: Response) => {
     "SELECT id FROM users WHERE id = ?",
     [id]
   );
+  console.log("userRow: ", userRow)
 
   if (userRow.length === 0) {
     return res.status(404).json({ message: "Usuário não encontrado" });
